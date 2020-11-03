@@ -2,13 +2,47 @@ document.addEventListener("DOMContentLoaded", function(){
   mountFormListener()
   mountTitleClick()
   mountMouseEvent()
+  fetchPosts()
 
   const title = document.querySelector("#title")
   const author = document.querySelector("#author")
   const content = document.querySelector("#content")
 })
 
+function mountBlogsToDom(posts){
+  posts.forEach(function(post){
+     // create a htmlified post from info
+     const htmlPost = htmlify(post)
+     // push it to the DOM to display
+     document.querySelector(".post-lists").innerHTML += htmlPost
+  })
 
+  // for(post of posts){
+  //   // create a htmlified post from info
+  //   const htmlPost = htmlify(post)
+  //   // push it to the DOM to display
+  //   document.querySelector(".post-lists").innerHTML += htmlPost
+  // }
+}
+
+
+function fetchPosts(){
+  // fetch("http://localhost:3000/posts")
+  // .then(resp => resp.json())
+  // .then( posts => {
+  //   mountBlogsToDom(posts)
+  // })
+
+  console.log(fetch("http://localhost:3000/posts")
+  .then(function(resp){
+    return resp.json()
+  }))
+  // .then(function(posts){
+  //   mountBlogsToDom(posts)
+  // })
+
+  
+}
 
 const getPostData = function(form){
   return {
