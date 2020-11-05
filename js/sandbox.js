@@ -63,3 +63,4 @@ function myEach(arr, callback){
 const timer = setInterval(() => {
   console.log("2 seconds passed")
 }, 2000);
+
