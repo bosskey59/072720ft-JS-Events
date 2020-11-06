@@ -33,6 +33,7 @@ function mountEditDestroy(){
   // iterating through and adding a event listener
 
   document.querySelector(".post-lists").addEventListener("click", function(e){
+    const id = e.target.parentElement.id
     if(e.target.className === "edit"){
       // get all info of post
       const [currentTitle, currentAuthor, currentContent] = e.target.parentElement.querySelectorAll("span")
@@ -48,7 +49,11 @@ function mountEditDestroy(){
       form.dataset.post = id
 
     }else if( e.target.className === "delete"){
-      console.log("delete clicked")
+      deletePostFetch(id)
+    }else if( e.target.className === "like"){
+      const [,,,likes] = e.target.parentElement.querySelectorAll("span")
+      const newLikes = parseInt(likes.innerText) + 1
+      incrementLike(id, newLikes)
     }
   })
 }
@@ -87,8 +92,10 @@ const htmlify = (obj) =>{
         <span class="card-title">${obj.title}</span>
         <p>By:<span>${obj.author}</span></p>
         <p><span>${obj.content}</span></p>
+        <p><span>${obj.likes}</span></p>
         <button class="edit">Edit</button>
         <button class="delete">Delete</button>
+        <button class="like">like</button>
       </div>
     </div>
   `)
@@ -116,30 +123,71 @@ function mountFormListener(){
     if(event.target.dataset.action === "update"){
       const post = {...postObj, id: event.target.dataset.post}
       updatePost(post)
-      .then(resp => resp.json())
-      .then(data =>{
-        fetchPosts()
-      })
 
       // send patch request to actually make edit
       // reset form/ change it back create
     }else{
       createPost(postObj)
     }
-    event.target.reset() 
+    event.target.reset()
+    event.target.dataset.action = "create"
+    delete event.target.dataset.post
+    event.target.querySelector("#submit").value = "Create Post" 
 
   })
   // debugger
 }
 
+function incrementLike(id, likes){
+  fetch(`http://localhost:3000/api/v1/posts/${id}`,{
+    method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({post:{likes:likes}}) // body data type must match "Content-Type" header
+  })
+  .then(resp => resp.json())
+      .then(data =>{
+        if (data.errors){
+         throw new Error(data.errors) 
+        }else{
+          fetchPosts()
+        }
+      })
+      .catch(err => alert(err))
+}
+
+
+function deletePostFetch(id){
+  fetch(`http://localhost:3000/api/v1/posts/${id}`,{
+    method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(resp => resp.json())
+  .then(data =>{
+      fetchPosts()
+  })
+}
+
 function updatePost(postObj){
-  return fetch(`http://localhost:3000/api/v1/posts/${postObj.id}`,{
+  fetch(`http://localhost:3000/api/v1/posts/${postObj.id}`,{
     method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({post:postObj}) // body data type must match "Content-Type" header
   })
+  .then(resp => resp.json())
+      .then(data =>{
+        if (data.errors){
+         throw new Error(data.errors) 
+        }else{
+          fetchPosts()
+        }
+      })
+      .catch(err => alert(err))
 }
 
 
@@ -186,7 +234,13 @@ function colorChange(element){
 function mountTitleClick(){
   const header = document.querySelector(".header .center")
   header.addEventListener("click", function(e){
-    colorChange(e.target)
+    // colorChange(e.target)
+    if(!document.querySelector(".header .center").className.includes("red")){
+      e.target.classList.add("red")
+    }else{
+      e.target.classList.remove("red")
+    }
+      
 
   })
 }
